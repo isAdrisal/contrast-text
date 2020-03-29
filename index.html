@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contrast Text</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    *::selection {
+      background-color: lightslategrey;
+      color: white;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background-color: lightgray;
+    }
+    main {
+      display: flex;
+      width: 70%;
+    }
+    section.product-card {
+      width: 50%;
+      position: relative;
+    }
+    section.light-text {
+      color: #ffffff;
+    }
+    section.dark-text {
+      color: inherit;
+    }
+    img {
+      width: 100%;
+      display: block;
+    }
+    h2 {
+      margin: 0;
+      padding: 0;
+      line-height: 1;
+      position: absolute;
+      top: 60%;
+      left: 10%;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="product-card">
+      <h2>This is a dark image.</h2>
+      <img src="dark.jpg">
+    </section>
+    <section class="product-card">
+      <h2>This is a light image.</h2>
+      <img src="light.jpg">
+    </section>
+  </main>
+</body>
+<script>
+  window.addEventListener("load", () => {
+    const getImageBrightness = (image, area) => {
+      let canvas = document.createElement("canvas");
+      canvas.width = area.width / area.scale;
+      canvas.height = area.height / area.scale;
+
+      let ctx = canvas.getContext("2d");
+      ctx.drawImage(
+        image,
+        area.x,
+        area.y,
+        area.width,
+        area.height,
+        0,
+        0,
+        canvas.width,
+        canvas.height);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      let sum = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        r = data[i];
+        g = data[i + 1];
+        b = data[i + 2];
+        a = data[i + 3];
+
+        avg = Math.floor(((r + g + b) / 3) * (a / 255));
+        sum += avg;
+      };
+      return Math.floor(sum / (data.length / 4));
+    };
+
+    console.time("Contrast text");
+    const cards = document.querySelectorAll("section.product-card");
+    for (const card of cards) {
+      if (card.classList.contains("dark-text") ||
+          card.classList.contains("light-text")) continue;
+
+      const image = card.querySelector("img");
+      const text = card.querySelector("h2");
+      const imageBound = image.getBoundingClientRect();
+      const textBound = text.getBoundingClientRect();
+      const xScale = image.naturalWidth / image.width;
+      const yScale = image.naturalHeight / image.height;
+      const area = {
+        x: (textBound.left - imageBound.left) * xScale,
+        y: (textBound.top - imageBound.top) * yScale,
+        width: textBound.width * xScale,
+        height: textBound.height * yScale,
+        scale: (xScale + yScale) / 2
+      };
+      const brightness = getImageBrightness(image, area);
+      if (brightness <= 140) {
+        card.classList.add("light-text")
+      } else {
+        card.classList.add("dark-text");
+      };
+    };
+    console.timeEnd("Contrast text");
+  });
+</script>
+</html>
