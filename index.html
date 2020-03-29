@@ -62,8 +62,8 @@
   </main>
 </body>
 <script>
-  window.addEventListener("load", () => {
-    const getImageBrightness = (image, area) => {
+  window.addEventListener("load", function() {
+    const getImageBrightness = function(image, area) {
       let canvas = document.createElement("canvas");
       canvas.width = area.width / area.scale;
       canvas.height = area.height / area.scale;
@@ -97,10 +97,13 @@
     };
 
     console.time("Contrast text");
+    if (window.NodeList && !NodeList.prototype.forEach) {
+      NodeList.prototype.forEach = Array.prototype.forEach;
+    }
     const cards = document.querySelectorAll("section.product-card");
-    for (const card of cards) {
+    cards.forEach(function(card) {
       if (card.classList.contains("dark-text") ||
-          card.classList.contains("light-text")) continue;
+          card.classList.contains("light-text")) return;
 
       const image = card.querySelector("img");
       const text = card.querySelector("h2");
@@ -121,7 +124,7 @@
       } else {
         card.classList.add("dark-text");
       };
-    };
+    });
     console.timeEnd("Contrast text");
   });
 </script>
